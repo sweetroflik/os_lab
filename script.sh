@@ -13,14 +13,9 @@ handler(){
   fi
 }
 
-
-
 read -p "Enter first file: " file1
 read -p "Enter second file: " file2
 
-
-
-trap handler SIGINT
 
 if [[ ! -f "$file1" || ! -f "$file2" ]]; then
   if [[ ! -f "$file1" && ! -f "$file2" ]]; then
@@ -57,6 +52,10 @@ fi
   done
 )
 
+stty -echoctl
+trap handler SIGINT
 echo "Press Ctrl+C 3 times to save, press anything else to exit..."
 read -n 1
+stty echoctl
+
 exit 0
