@@ -1,10 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <signal.h>
-#include <sys/stat.h>
-#include <time.h>
+#include <stdio.h> //snprintf, printf, fflush, fsnaf, getchar
+#include <stdlib.h> // system, exit
+#include <unistd.h> // access
+#include <signal.h> //sigaction
+#include <sys/stat.h> // mkdir
+#include <time.h> //time
 
 int count = 0;
 char file1[256];
@@ -14,13 +13,12 @@ void handler(int sig) {
     count++;
     if (count >= 3) {
         char dir[512];
-        time_t t = time(NULL);
-        struct tm tm = *localtime(&t);
+        time_t t = time(NULL); // текущее календарное время
+        struct tm tm = *localtime(&t); // возвращает указатель на struct tm
         snprintf(dir, sizeof(dir), "saves/saved_files_%04d%02d%02d_%02d%02d%02d",
                  tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
                  tm.tm_hour, tm.tm_min, tm.tm_sec);
 
-        // Создаём папку saves, если не существует
         mkdir("saves", 0755);
         mkdir(dir, 0755);
 
@@ -33,13 +31,9 @@ void handler(int sig) {
     }
 }
 
-int file_exists(const char *filename) {
-    struct stat st;
-    return (stat(filename, &st) == 0);
-}
 
 int main() {
-    struct sigaction sa;
+    struct sigaction sa; // Эта структура задаёт функцию вызывать при получении сигнала, сигналы блокировать внутри обработчика, как обрабатывать сигнал (флаги поведения)
     sa.sa_handler = handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
@@ -50,25 +44,15 @@ int main() {
     printf("Enter second file:");
     scanf("%s", file2);
 
-    if (access(file1, F_OK) != 0){
+    if (access(file1, F_OK) != 0){ // F_OK - проверть путь и его доступность
         printf("File %s not found\n", file1);
         fflush(stdout);
+        return 1;
     }
 
     if (access(file2, F_OK) != 0) {
         printf("File %s not found\n", file2);
         fflush(stdout);
-    }
-
-
-    if (!file_exists(file1) && !file_exists(file2)) {
-        printf("Both files not found\n");
-        return 1;
-    } else if (!file_exists(file1)) {
-        printf("First file not found\n");
-        return 1;
-    } else if (!file_exists(file2)) {
-        printf("Second file not found\n");
         return 1;
     }
 
